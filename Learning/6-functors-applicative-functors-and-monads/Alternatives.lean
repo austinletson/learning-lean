@@ -42,12 +42,13 @@ def Validate.mapErrors : Validate ε α → (ε → ε') → Validate ε' α
 
 
 
-def Field := String
+def Field := String deriving Repr
 
 inductive TreeError where
   | field : Field → String → TreeError
   | path : String → TreeError → TreeError
   | both : TreeError → TreeError → TreeError
+deriving Repr
 
 instance : Append TreeError where
   append := .both
@@ -59,6 +60,7 @@ def report : TreeError → String
 
 instance : ToString TreeError where
   toString := report
+
 
 
 def reportError (f : Field) (msg : String) : Validate TreeError α :=
@@ -127,5 +129,12 @@ def checkLegacyInput (input : RawInput) : Validate TreeError LegacyCheckedInput 
   checkCompany input <|> checkHumanBefore1970 input <|> checkHumanAfter1970 input
 
 
+def treeError : TreeError := TreeError.field "type" "msg test"
 
-#eval checkLegacyInput ⟨"Johnny's Troll Groomers", "FIRM"⟩
+def ifErrorReport : Validate TreeError LegacyCheckedInput → String
+  | .ok _ => ""
+  | .errors er => report er
+
+
+
+#eval ifErrorReport $ checkLegacyInput ⟨"", "1971"⟩
