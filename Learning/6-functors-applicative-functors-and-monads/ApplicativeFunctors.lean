@@ -1,14 +1,12 @@
 import Learning.«4-overloading-and-type-classes».ArraysAndIndexing
 import Learning.«4-overloading-and-type-classes».Appending
+import Learning.«6-functors-applicative-functors-and-monads».Input
 
 inductive Validate (ε α : Type) : Type where
   | ok : α → Validate ε α
   | errors : NonEmptyList ε → Validate ε α
 deriving Repr
 
-structure RawInput where
-  name : String
-  birthYear : String
 
 structure CheckedInput (thisYear : Nat) : Type where
   name : {n : String // n ≠ ""}
@@ -31,7 +29,6 @@ instance : Applicative (Validate ε) where
           | .ok _ => .errors es
           | .errors e => .errors (es ++ e)
 
-def Field := String
 
 def reportError (f : Field) (msg : String) : Validate (Field × String) α :=
   .errors { head := (f, msg), tail := [] }
@@ -59,7 +56,7 @@ def checkBirthYear (thisYear year : Nat) : Validate (Field × String) {y : Nat /
   else reportError "birth year" "Must be after 1900"
 
 def checkInput (year : Nat) (input : RawInput) : Validate (Field × String) (CheckedInput year) :=
-  pure CheckedInput.mk <*>
+  CheckedInput.mk <$>
     checkName input.name <*>
     (checkYearIsNat input.birthYear).andThen fun birthYearAsNat =>
       checkBirthYear year birthYearAsNat
