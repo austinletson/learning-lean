@@ -74,3 +74,57 @@ theorem fun_to_inhabited_inhabited {α β : Type} (ib : Inhabited β) : (Inhabit
 
 
 end Hidden
+
+namespace Hidden
+inductive List (α : Type u) where
+| nil  : List α
+| cons : α → List α → List α
+namespace List
+def append (as bs : List α) : List α :=
+ match as with
+ | nil       => bs
+ | cons a as => cons a (append as bs)
+theorem nil_append (as : List α) : append nil as = as :=
+ rfl
+theorem cons_append (a : α) (as bs : List α)
+                    : append (cons a as) bs = cons a (append as bs) :=
+ rfl
+
+theorem append_nil (as : List α) : append as nil = as :=
+  List.recOn
+    (motive := fun as => append as nil = as) as
+    (show append nil nil = nil from rfl)
+    (fun (a : α) (as : List α) (ih : append as nil = as) =>
+      show append (cons a as) nil = cons a as from
+      calc append (cons a as) nil
+        _ = cons a (append as nil) := by rw [cons_append]
+        _ = cons a as := by rw [ih]
+    )
+
+theorem append_nil_tact (as : List α) : append as nil = as :=
+  List.recOn
+    (motive := fun as => append as nil = as) as rfl
+    (fun a as ih => by simp [cons_append, ih])
+
+
+theorem append_assoc (as bs cs : List α)
+        : append (append as bs) cs = append as (append bs cs) :=
+  List.recOn
+    (motive := fun k => append (append k bs) cs = append k (append bs cs)) as
+    (by simp [nil_append])
+    (fun (a : α) (as : List α) (ih : append (append as bs) cs = append as (append bs cs)) =>
+      show append (append (cons a as) bs) cs = append (cons a as) (append bs cs) from
+      calc append (append (cons a as) bs) cs
+        _ = cons a (append (append as bs) cs) := by repeat (rw [cons_append])
+        _ = cons a (append as (append bs cs)) := by rw [ih]
+        _ = append (cons a as) (append bs cs) := by rw [← cons_append])
+
+theorem append_assoc_tact (as bs cs : List α)
+        : append (append as bs) cs = append as (append bs cs) :=
+  List.recOn
+    (motive := fun k => append (append k bs) cs = append k (append bs cs)) as
+    (by simp [nil_append])
+    (fun a as ih => by simp [cons_append, ih])
+
+end List
+end Hidden
