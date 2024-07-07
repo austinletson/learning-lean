@@ -107,6 +107,7 @@ theorem append_nil_tact (as : List α) : append as nil = as :=
     (fun a as ih => by simp [cons_append, ih])
 
 
+
 theorem append_assoc (as bs cs : List α)
         : append (append as bs) cs = append as (append bs cs) :=
   List.recOn
